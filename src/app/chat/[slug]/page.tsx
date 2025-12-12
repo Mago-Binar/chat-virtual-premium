@@ -300,9 +300,10 @@ export default function ChatPage() {
             onChange={(e) => setInputValue(e.target.value)}
             onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
             placeholder={t('chat.placeholder', locale)}
-            className="flex-1 px-6 py-4 rounded-full border-2 focus:outline-none focus:ring-2 transition-all text-black"
+            className="flex-1 px-6 py-4 rounded-full border-2 focus:outline-none focus:ring-2 transition-all text-gray-900 placeholder:text-gray-400"
             style={{
               borderColor: model.colors.primary,
+              backgroundColor: '#ffffff',
             }}
           />
 

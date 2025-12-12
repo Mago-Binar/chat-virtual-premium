@@ -1,27 +1,27 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
 import { 
   LayoutDashboard, 
-  FileText, 
-  Image as ImageIcon, 
   Users, 
   Coins, 
   Settings, 
+  FileText, 
+  Image as ImageIcon,
   LogOut,
-  TrendingUp,
   DollarSign,
-  UserPlus,
-  Activity
+  TrendingUp,
+  Package
 } from 'lucide-react';
 
 export default function AdminDashboardPage() {
   const router = useRouter();
+  const [activeSection, setActiveSection] = useState('overview');
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
+    // Verificar autenticação
     const auth = localStorage.getItem('admin-authenticated');
     if (auth !== 'true') {
       router.push('/admin');
@@ -43,116 +43,182 @@ export default function AdminDashboardPage() {
     );
   }
 
-  const stats = [
-    { label: 'Usuários Ativos', value: '1,234', icon: Users, color: 'from-blue-500 to-cyan-500', change: '+12%' },
-    { label: 'Receita Mensal', value: 'R$ 45.6k', icon: DollarSign, color: 'from-green-500 to-emerald-500', change: '+23%' },
-    { label: 'Tokens Vendidos', value: '89.2k', icon: Coins, color: 'from-pink-500 to-purple-600', change: '+18%' },
-    { label: 'Novos Usuários', value: '156', icon: UserPlus, color: 'from-orange-500 to-red-500', change: '+8%' },
-  ];
-
-  const menuItems = [
-    { label: 'Gerenciar Conteúdo', href: '/admin/content', icon: FileText, description: 'Editar textos e banners' },
-    { label: 'Gerenciar Modelos', href: '/admin/models', icon: Users, description: 'Adicionar/remover modelos' },
-    { label: 'Pacotes de Tokens', href: '/admin/packages', icon: Coins, description: 'Editar valores e quantidades' },
-    { label: 'Configurações', href: '/admin/settings', icon: Settings, description: 'Configurações gerais' },
-  ];
-
   return (
     <div className="min-h-screen bg-gradient-to-b from-black via-purple-950/20 to-black">
-      {/* Header */}
-      <header className="bg-black/50 backdrop-blur-md border-b border-white/10 sticky top-0 z-50">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="bg-gradient-to-r from-pink-500 to-purple-600 p-2 rounded-xl">
-                <LayoutDashboard className="w-6 h-6 text-white" />
-              </div>
-              <div>
-                <h1 className="text-xl font-bold text-white">Painel Administrativo</h1>
-                <p className="text-white/60 text-sm">EuAna Management</p>
-              </div>
-            </div>
+      <div className="flex">
+        {/* Sidebar */}
+        <aside className="w-64 min-h-screen bg-white/5 backdrop-blur-sm border-r border-white/10 p-6">
+          <div className="mb-8">
+            <h1 className="text-2xl font-bold bg-gradient-to-r from-pink-500 to-purple-600 bg-clip-text text-transparent">
+              Admin Panel
+            </h1>
+            <p className="text-white/60 text-sm mt-1">Gerenciamento Completo</p>
+          </div>
+
+          <nav className="space-y-2">
+            {[
+              { id: 'overview', icon: LayoutDashboard, label: 'Visão Geral' },
+              { id: 'users', icon: Users, label: 'Usuários' },
+              { id: 'tokens', icon: Coins, label: 'Pacotes de Tokens' },
+              { id: 'models', icon: ImageIcon, label: 'Modelos' },
+              { id: 'content', icon: FileText, label: 'Conteúdo' },
+              { id: 'settings', icon: Settings, label: 'Configurações' },
+            ].map((item) => (
+              <button
+                key={item.id}
+                onClick={() => setActiveSection(item.id)}
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${
+                  activeSection === item.id
+                    ? 'bg-gradient-to-r from-pink-500 to-purple-600 text-white'
+                    : 'text-white/60 hover:text-white hover:bg-white/5'
+                }`}
+              >
+                <item.icon className="w-5 h-5" />
+                <span>{item.label}</span>
+              </button>
+            ))}
+
             <button
               onClick={handleLogout}
-              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-all"
+              className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-all mt-8"
             >
-              <LogOut className="w-4 h-4" />
+              <LogOut className="w-5 h-5" />
               <span>Sair</span>
             </button>
-          </div>
-        </div>
-      </header>
+          </nav>
+        </aside>
 
-      <div className="container mx-auto px-4 py-8">
-        {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          {stats.map((stat, index) => (
-            <div
-              key={index}
-              className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-6 hover:scale-105 transition-all"
-            >
-              <div className="flex items-center justify-between mb-4">
-                <div className={`bg-gradient-to-r ${stat.color} p-3 rounded-xl`}>
-                  <stat.icon className="w-6 h-6 text-white" />
-                </div>
-                <span className="text-green-400 text-sm font-semibold">{stat.change}</span>
+        {/* Main Content */}
+        <main className="flex-1 p-8">
+          {/* Overview Section */}
+          {activeSection === 'overview' && (
+            <div>
+              <h2 className="text-3xl font-bold text-white mb-8">Visão Geral</h2>
+              
+              {/* Stats Cards */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                {[
+                  { label: 'Usuários Ativos', value: '1,234', icon: Users, color: 'from-blue-500 to-cyan-500' },
+                  { label: 'Tokens Vendidos', value: '45,678', icon: Coins, color: 'from-pink-500 to-purple-600' },
+                  { label: 'Receita Total', value: 'R$ 12,345', icon: DollarSign, color: 'from-green-500 to-emerald-500' },
+                  { label: 'Crescimento', value: '+23%', icon: TrendingUp, color: 'from-orange-500 to-red-500' },
+                ].map((stat, index) => (
+                  <div
+                    key={index}
+                    className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-6"
+                  >
+                    <div className={`inline-flex p-3 rounded-xl bg-gradient-to-r ${stat.color} mb-4`}>
+                      <stat.icon className="w-6 h-6 text-white" />
+                    </div>
+                    <p className="text-white/60 text-sm mb-1">{stat.label}</p>
+                    <p className="text-3xl font-bold text-white">{stat.value}</p>
+                  </div>
+                ))}
               </div>
-              <p className="text-white/60 text-sm mb-1">{stat.label}</p>
-              <p className="text-3xl font-bold text-white">{stat.value}</p>
-            </div>
-          ))}
-        </div>
 
-        {/* Quick Actions */}
-        <div className="mb-8">
-          <h2 className="text-2xl font-bold text-white mb-6">Ações Rápidas</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {menuItems.map((item, index) => (
-              <Link
-                key={index}
-                href={item.href}
-                className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-6 hover:bg-white/10 transition-all group"
-              >
-                <div className="flex items-start gap-4">
-                  <div className="bg-gradient-to-r from-pink-500 to-purple-600 p-3 rounded-xl group-hover:scale-110 transition-all">
-                    <item.icon className="w-6 h-6 text-white" />
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="text-lg font-semibold text-white mb-1">{item.label}</h3>
-                    <p className="text-white/60 text-sm">{item.description}</p>
-                  </div>
+              {/* Recent Activity */}
+              <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-6">
+                <h3 className="text-xl font-bold text-white mb-4">Atividade Recente</h3>
+                <div className="space-y-4">
+                  {[
+                    { user: 'João Silva', action: 'Comprou 100 tokens', time: '5 min atrás' },
+                    { user: 'Maria Santos', action: 'Criou nova conta', time: '12 min atrás' },
+                    { user: 'Pedro Costa', action: 'Comprou 250 tokens', time: '23 min atrás' },
+                    { user: 'Ana Oliveira', action: 'Atualizou perfil', time: '1 hora atrás' },
+                  ].map((activity, index) => (
+                    <div key={index} className="flex items-center justify-between p-4 bg-white/5 rounded-xl">
+                      <div>
+                        <p className="text-white font-medium">{activity.user}</p>
+                        <p className="text-white/60 text-sm">{activity.action}</p>
+                      </div>
+                      <p className="text-white/40 text-sm">{activity.time}</p>
+                    </div>
+                  ))}
                 </div>
-              </Link>
-            ))}
-          </div>
-        </div>
-
-        {/* Recent Activity */}
-        <div>
-          <h2 className="text-2xl font-bold text-white mb-6">Atividade Recente</h2>
-          <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-6">
-            <div className="space-y-4">
-              {[
-                { action: 'Novo usuário registrado', user: 'João Silva', time: '5 min atrás' },
-                { action: 'Compra de tokens realizada', user: 'Maria Santos', time: '12 min atrás' },
-                { action: 'Modelo adicionado', user: 'Admin', time: '1 hora atrás' },
-                { action: 'Configuração atualizada', user: 'Admin', time: '2 horas atrás' },
-              ].map((activity, index) => (
-                <div
-                  key={index}
-                  className="flex items-center gap-4 p-4 bg-white/5 rounded-xl hover:bg-white/10 transition-all"
-                >
-                  <Activity className="w-5 h-5 text-pink-500" />
-                  <div className="flex-1">
-                    <p className="text-white font-medium">{activity.action}</p>
-                    <p className="text-white/60 text-sm">{activity.user}</p>
-                  </div>
-                  <span className="text-white/40 text-sm">{activity.time}</span>
-                </div>
-              ))}
+              </div>
             </div>
-          </div>
-        </div>
+          )}
+
+          {/* Users Section */}
+          {activeSection === 'users' && (
+            <div>
+              <h2 className="text-3xl font-bold text-white mb-8">Gerenciar Usuários</h2>
+              <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-6">
+                <p className="text-white/60">Lista de usuários e gerenciamento em desenvolvimento...</p>
+              </div>
+            </div>
+          )}
+
+          {/* Tokens Section */}
+          {activeSection === 'tokens' && (
+            <div>
+              <h2 className="text-3xl font-bold text-white mb-8">Pacotes de Tokens</h2>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {[
+                  { name: 'Starter', tokens: 50, price: 19.90, bonus: 0 },
+                  { name: 'Basic', tokens: 100, price: 34.90, bonus: 10 },
+                  { name: 'Popular', tokens: 250, price: 79.90, bonus: 50 },
+                  { name: 'Premium', tokens: 500, price: 149.90, bonus: 100 },
+                  { name: 'Ultimate', tokens: 1000, price: 279.90, bonus: 250 },
+                ].map((pkg, index) => (
+                  <div key={index} className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-6">
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className="text-xl font-bold text-white">{pkg.name}</h3>
+                      <Package className="w-6 h-6 text-pink-500" />
+                    </div>
+                    <div className="space-y-2 mb-4">
+                      <p className="text-white/60">Tokens: <span className="text-white font-semibold">{pkg.tokens}</span></p>
+                      <p className="text-white/60">Bônus: <span className="text-white font-semibold">+{pkg.bonus}</span></p>
+                      <p className="text-white/60">Preço: <span className="text-white font-semibold">R$ {pkg.price.toFixed(2)}</span></p>
+                    </div>
+                    <button className="w-full bg-gradient-to-r from-pink-500 to-purple-600 text-white py-2 rounded-xl hover:scale-105 transition-all">
+                      Editar
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Models Section */}
+          {activeSection === 'models' && (
+            <div>
+              <h2 className="text-3xl font-bold text-white mb-8">Gerenciar Modelos</h2>
+              <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-6">
+                <div className="flex items-center justify-between mb-6">
+                  <p className="text-white/60">Adicionar, editar ou remover modelos</p>
+                  <button className="bg-gradient-to-r from-pink-500 to-purple-600 text-white px-6 py-2 rounded-xl hover:scale-105 transition-all">
+                    Adicionar Modelo
+                  </button>
+                </div>
+                <p className="text-white/40 text-sm">Funcionalidade em desenvolvimento...</p>
+              </div>
+            </div>
+          )}
+
+          {/* Content Section */}
+          {activeSection === 'content' && (
+            <div>
+              <h2 className="text-3xl font-bold text-white mb-8">Gerenciar Conteúdo</h2>
+              <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-6">
+                <p className="text-white/60">Editar textos, banners e fontes do site</p>
+                <p className="text-white/40 text-sm mt-4">Funcionalidade em desenvolvimento...</p>
+              </div>
+            </div>
+          )}
+
+          {/* Settings Section */}
+          {activeSection === 'settings' && (
+            <div>
+              <h2 className="text-3xl font-bold text-white mb-8">Configurações</h2>
+              <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-6">
+                <p className="text-white/60">Configurações gerais do sistema</p>
+                <p className="text-white/40 text-sm mt-4">Funcionalidade em desenvolvimento...</p>
+              </div>
+            </div>
+          )}
+        </main>
       </div>
     </div>
   );
