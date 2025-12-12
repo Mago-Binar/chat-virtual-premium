@@ -2,32 +2,47 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Lock, Shield, Eye, EyeOff } from 'lucide-react';
+import { Lock, Shield, Eye, EyeOff, Mail } from 'lucide-react';
 
 export default function AdminLoginPage() {
   const router = useRouter();
-  const [step, setStep] = useState<'password' | '2fa'>('password');
+  const [step, setStep] = useState<'credentials' | '2fa'>('credentials');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [code2FA, setCode2FA] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
-  const handlePasswordSubmit = (e: React.FormEvent) => {
+  const handleCredentialsSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setIsLoading(true);
 
-    // Simular verificação de senha
-    setTimeout(() => {
-      if (password === 'admin123') {
+    try {
+      const response = await fetch('/api/admin/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        // Login bem-sucedido, avançar para 2FA
         setStep('2fa');
         setIsLoading(false);
       } else {
-        setError('Senha incorreta');
+        setError(data.error || 'Email ou senha inválidos');
         setIsLoading(false);
       }
-    }, 1000);
+    } catch (error) {
+      console.error('Erro ao fazer login:', error);
+      setError('Erro ao conectar com o servidor');
+      setIsLoading(false);
+    }
   };
 
   const handle2FASubmit = (e: React.FormEvent) => {
@@ -62,8 +77,25 @@ export default function AdminLoginPage() {
 
         {/* Login Form */}
         <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-3xl p-8">
-          {step === 'password' ? (
-            <form onSubmit={handlePasswordSubmit}>
+          {step === 'credentials' ? (
+            <form onSubmit={handleCredentialsSubmit}>
+              <div className="mb-4">
+                <label className="block text-white/80 mb-2 text-sm font-medium">
+                  Email do Administrador
+                </label>
+                <div className="relative">
+                  <Mail className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-white/40" />
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="Digite seu email"
+                    className="w-full bg-white/5 border border-white/10 rounded-xl pl-12 pr-4 py-4 text-white placeholder:text-white/30 focus:outline-none focus:border-pink-500/50"
+                    required
+                  />
+                </div>
+              </div>
+
               <div className="mb-6">
                 <label className="block text-white/80 mb-2 text-sm font-medium">
                   Senha de Administrador
@@ -139,7 +171,7 @@ export default function AdminLoginPage() {
               <button
                 type="button"
                 onClick={() => {
-                  setStep('password');
+                  setStep('credentials');
                   setCode2FA('');
                   setError('');
                 }}
