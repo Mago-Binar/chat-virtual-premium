@@ -6,6 +6,7 @@ import "./globals.css";
 // Import all available fonts for AI usage
 import "../lib/fonts";
 import { LocaleProvider } from "@/contexts/locale-context";
+import { TokensProvider } from "@/contexts/tokens-context";
 import Header from "@/components/custom/header";
 import Footer from "@/components/custom/footer";
 
@@ -38,11 +39,13 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-black text-white`}
       >
         <LocaleProvider>
-          <Header />
-          <main className="pt-20">
-            {children}
-          </main>
-          <Footer />
+          <TokensProvider>
+            <Header />
+            <main className="pt-20">
+              {children}
+            </main>
+            <Footer />
+          </TokensProvider>
         </LocaleProvider>
       </body>
     </html>

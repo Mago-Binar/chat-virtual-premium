@@ -15,8 +15,8 @@ export default function Footer() {
       quickLinks: [
         { label: 'Início', href: '/' },
         { label: 'Modelos', href: '/#modelos' },
-        { label: 'Sobre', href: '/#sobre' },
-        { label: 'Contato', href: '/#contato' },
+        { label: 'Sobre', href: '/sobre' },
+        { label: 'Contato', href: 'mailto:meusugarsuporte@gmail.com' },
       ],
       social: 'Redes Sociais',
       support: 'Suporte',
@@ -28,6 +28,7 @@ export default function Footer() {
       ],
       rights: '© 2024 EuAna. Todos os direitos reservados.',
       madeWith: 'Feito com',
+      admin: 'Admin',
     },
     en: {
       about: 'About',
@@ -36,8 +37,8 @@ export default function Footer() {
       quickLinks: [
         { label: 'Home', href: '/' },
         { label: 'Models', href: '/#modelos' },
-        { label: 'About', href: '/#sobre' },
-        { label: 'Contact', href: '/#contato' },
+        { label: 'About', href: '/sobre' },
+        { label: 'Contact', href: 'mailto:meusugarsuporte@gmail.com' },
       ],
       social: 'Social Media',
       support: 'Support',
@@ -49,6 +50,7 @@ export default function Footer() {
       ],
       rights: '© 2024 EuAna. All rights reserved.',
       madeWith: 'Made with',
+      admin: 'Admin',
     },
     es: {
       about: 'Acerca de',
@@ -57,8 +59,8 @@ export default function Footer() {
       quickLinks: [
         { label: 'Inicio', href: '/' },
         { label: 'Modelos', href: '/#modelos' },
-        { label: 'Acerca de', href: '/#sobre' },
-        { label: 'Contacto', href: '/#contato' },
+        { label: 'Acerca de', href: '/sobre' },
+        { label: 'Contacto', href: 'mailto:meusugarsuporte@gmail.com' },
       ],
       social: 'Redes Sociales',
       support: 'Soporte',
@@ -70,6 +72,7 @@ export default function Footer() {
       ],
       rights: '© 2024 EuAna. Todos los derechos reservados.',
       madeWith: 'Hecho con',
+      admin: 'Admin',
     },
   };
 
@@ -105,16 +108,30 @@ export default function Footer() {
           <div>
             <h4 className="font-semibold mb-4">{content.links}</h4>
             <ul className="space-y-2">
-              {content.quickLinks.map((link) => (
-                <li key={link.href}>
-                  <Link
-                    href={`${link.href}${link.href.includes('#') ? '' : `?lang=${locale}`}`}
-                    className="text-white/60 hover:text-white text-sm transition-colors"
-                  >
-                    {link.label}
-                  </Link>
-                </li>
-              ))}
+              {content.quickLinks.map((link) => {
+                if (link.href.startsWith('mailto:')) {
+                  return (
+                    <li key={link.href}>
+                      <a
+                        href={link.href}
+                        className="text-white/60 hover:text-white text-sm transition-colors"
+                      >
+                        {link.label}
+                      </a>
+                    </li>
+                  );
+                }
+                return (
+                  <li key={link.href}>
+                    <Link
+                      href={`${link.href}${link.href.includes('#') ? '' : `?lang=${locale}`}`}
+                      className="text-white/60 hover:text-white text-sm transition-colors"
+                    >
+                      {link.label}
+                    </Link>
+                  </li>
+                );
+              })}
             </ul>
           </div>
 
@@ -152,9 +169,17 @@ export default function Footer() {
         {/* Bottom Bar */}
         <div className="border-t border-white/10 mt-8 pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
           <p className="text-white/40 text-sm">{content.rights}</p>
-          <p className="text-white/40 text-sm flex items-center gap-2">
-            {content.madeWith} <Heart className="w-4 h-4 text-pink-500 fill-pink-500" /> by EuAna Team
-          </p>
+          <div className="flex items-center gap-6">
+            <p className="text-white/40 text-sm flex items-center gap-2">
+              {content.madeWith} <Heart className="w-4 h-4 text-pink-500 fill-pink-500" /> by EuAna Team
+            </p>
+            <Link
+              href="/admin"
+              className="text-white/30 hover:text-white/60 text-xs transition-colors"
+            >
+              {content.admin}
+            </Link>
+          </div>
         </div>
       </div>
     </footer>

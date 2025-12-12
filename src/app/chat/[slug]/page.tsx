@@ -4,9 +4,10 @@ import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { ArrowLeft, Send, ImageIcon, X } from 'lucide-react';
+import { ArrowLeft, Send, ImageIcon, X, Coins } from 'lucide-react';
 import { fetchModelBySlug, Model } from '@/lib/models-data';
 import { t, Locale } from '@/lib/i18n';
+import { useTokens } from '@/contexts/tokens-context';
 import ImageGrid from '@/components/custom/image-grid';
 import VideoConversionModal from '@/components/custom/video-conversion-modal';
 import ExitWhatsappModal from '@/components/custom/exit-whatsapp-modal';
@@ -34,6 +35,8 @@ export default function ChatPage() {
   const [selectedImageForVideo, setSelectedImageForVideo] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const chatContainerRef = useRef<HTMLDivElement>(null);
+  const { tokens, deductTokens } = useTokens();
+  const [selectedImagePreview, setSelectedImagePreview] = useState<string | null>(null);
 
   useEffect(() => {
     const loadModel = async () => {
@@ -104,18 +107,6 @@ export default function ChatPage() {
     // Simulate AI response
     setTimeout(async () => {
       try {
-        // In production, this would call the Python backend
-        // const response = await fetch('/api/chat', {
-        //   method: 'POST',
-        //   headers: { 'Content-Type': 'application/json' },
-        //   body: JSON.stringify({
-        //     user_input: messageText,
-        //     character: model.name,
-        //     user_id: 'user-123',
-        //   }),
-        // });
-        // const data = await response.json();
-
         // Mock response for now
         const mockResponses = [
           'Que interessante! Me conta mais sobre isso...',
@@ -129,7 +120,6 @@ export default function ChatPage() {
           id: (Date.now() + 1).toString(),
           sender: 'ai',
           text: mockResponses[Math.floor(Math.random() * mockResponses.length)],
-          // imageUrl: Math.random() > 0.7 && model.suggestedImages ? model.suggestedImages[0] : undefined,
           timestamp: new Date(),
         };
 
@@ -155,13 +145,18 @@ export default function ChatPage() {
   };
 
   const handleVideoConversion = (duration: 5 | 10) => {
-    console.log(`Converting to ${duration}s video (${duration === 5 ? 2 : 3} tokens)`);
-    setShowVideoModal(false);
-    setSelectedImageForVideo(null);
-    // In production, this would trigger video generation
+    const cost = duration === 5 ? 2 : 3;
+    
+    if (deductTokens(cost)) {
+      console.log(`Converting to ${duration}s video (${cost} tokens deducted)`);
+      setShowVideoModal(false);
+      setSelectedImageForVideo(null);
+      alert(`✅ Vídeo de ${duration}s gerado! ${cost} tokens deduzidos.`);
+    } else {
+      alert('❌ Tokens insuficientes! Compre mais tokens para continuar.');
+      router.push('/comprar-tokens');
+    }
   };
-
-  const [selectedImagePreview, setSelectedImagePreview] = useState<string | null>(null);
 
   if (!model) {
     return (
@@ -291,13 +286,21 @@ export default function ChatPage() {
             </button>
           )}
 
+          <Link
+            href="/comprar-tokens"
+            className="p-3 rounded-full bg-gradient-to-r from-pink-500 to-purple-600 text-white transition-all hover:scale-110 flex items-center gap-2"
+            title="Comprar Tokens"
+          >
+            <Coins className="w-5 h-5" />
+          </Link>
+
           <input
             type="text"
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
             onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
             placeholder={t('chat.placeholder', locale)}
-            className="flex-1 px-6 py-4 rounded-full border-2 focus:outline-none focus:ring-2 transition-all"
+            className="flex-1 px-6 py-4 rounded-full border-2 focus:outline-none focus:ring-2 transition-all text-black"
             style={{
               borderColor: model.colors.primary,
             }}

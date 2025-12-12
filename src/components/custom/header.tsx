@@ -2,10 +2,12 @@
 
 import Link from 'next/link';
 import { useLocale } from '@/contexts/locale-context';
-import { Globe, User } from 'lucide-react';
+import { useTokens } from '@/contexts/tokens-context';
+import { Globe, User, Coins } from 'lucide-react';
 
 export default function Header() {
   const { locale, setLocale } = useLocale();
+  const { tokens } = useTokens();
 
   const menuItems = {
     pt: [
@@ -78,23 +80,35 @@ export default function Header() {
             })}
           </nav>
 
-          {/* Language Selector */}
-          <div className="flex items-center gap-2">
-            <Globe className="w-4 h-4 text-white/60" />
-            <div className="flex gap-2">
-              {languages.map((lang) => (
-                <button
-                  key={lang.code}
-                  onClick={() => setLocale(lang.code)}
-                  className={`px-3 py-1 rounded-full text-sm transition-all ${
-                    locale === lang.code
-                      ? 'bg-gradient-to-r from-pink-500 to-purple-600 text-white'
-                      : 'text-white/60 hover:text-white'
-                  }`}
-                >
-                  {lang.label}
-                </button>
-              ))}
+          {/* Right Section: Tokens + Language */}
+          <div className="flex items-center gap-4">
+            {/* Token Counter */}
+            <Link
+              href="/comprar-tokens"
+              className="flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-pink-500 to-purple-600 hover:scale-105 transition-all"
+            >
+              <Coins className="w-5 h-5 text-white" />
+              <span className="text-white font-bold">{tokens}</span>
+            </Link>
+
+            {/* Language Selector */}
+            <div className="flex items-center gap-2">
+              <Globe className="w-4 h-4 text-white/60" />
+              <div className="flex gap-2">
+                {languages.map((lang) => (
+                  <button
+                    key={lang.code}
+                    onClick={() => setLocale(lang.code)}
+                    className={`px-3 py-1 rounded-full text-sm transition-all ${
+                      locale === lang.code
+                        ? 'bg-gradient-to-r from-pink-500 to-purple-600 text-white'
+                        : 'text-white/60 hover:text-white'
+                    }`}
+                  >
+                    {lang.label}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
         </div>

@@ -1,11 +1,16 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { useLocale } from '@/contexts/locale-context';
-import { User, Settings, LogOut, Mail, Lock, Bell, CreditCard, Shield, ChevronRight } from 'lucide-react';
+import { useTokens } from '@/contexts/tokens-context';
+import { User, Settings, LogOut, Mail, Lock, Bell, CreditCard, Shield, ChevronRight, Coins } from 'lucide-react';
+import Link from 'next/link';
 
 export default function ContaPage() {
+  const router = useRouter();
   const { locale } = useLocale();
+  const { tokens } = useTokens();
   const [activeSection, setActiveSection] = useState('profile');
 
   const content = {
@@ -15,6 +20,9 @@ export default function ContaPage() {
       profile: 'Perfil',
       settings: 'Configurações',
       logout: 'Sair',
+      tokens: 'Tokens',
+      buyTokens: 'Comprar Tokens',
+      upgradeAccount: 'Upgrade da Conta',
       sections: {
         profile: {
           title: 'Informações do Perfil',
@@ -59,6 +67,9 @@ export default function ContaPage() {
       profile: 'Profile',
       settings: 'Settings',
       logout: 'Logout',
+      tokens: 'Tokens',
+      buyTokens: 'Buy Tokens',
+      upgradeAccount: 'Upgrade Account',
       sections: {
         profile: {
           title: 'Profile Information',
@@ -103,6 +114,9 @@ export default function ContaPage() {
       profile: 'Perfil',
       settings: 'Configuración',
       logout: 'Cerrar sesión',
+      tokens: 'Tokens',
+      buyTokens: 'Comprar Tokens',
+      upgradeAccount: 'Actualizar Cuenta',
       sections: {
         profile: {
           title: 'Información del Perfil',
@@ -159,6 +173,25 @@ export default function ContaPage() {
             {t.title}
           </h1>
           <p className="text-white/60">{t.subtitle}</p>
+        </div>
+
+        {/* Tokens Balance Card */}
+        <div className="bg-gradient-to-r from-pink-500 to-purple-600 rounded-3xl p-6 mb-6 flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <div className="bg-white/20 p-4 rounded-2xl">
+              <Coins className="w-8 h-8 text-white" />
+            </div>
+            <div>
+              <p className="text-white/80 text-sm">{t.tokens}</p>
+              <p className="text-3xl font-bold text-white">{tokens}</p>
+            </div>
+          </div>
+          <Link
+            href="/comprar-tokens"
+            className="bg-white text-purple-600 px-6 py-3 rounded-full font-semibold hover:scale-105 transition-all"
+          >
+            {t.buyTokens}
+          </Link>
         </div>
 
         <div className="grid md:grid-cols-4 gap-6">
@@ -256,9 +289,12 @@ export default function ContaPage() {
                   <div className="bg-gradient-to-r from-pink-500/10 to-purple-500/10 border border-pink-500/20 rounded-xl p-6 mb-4">
                     <p className="text-white/60 text-sm mb-2">{t.sections.subscription.plan}</p>
                     <p className="text-2xl font-bold text-white mb-4">{t.sections.subscription.free}</p>
-                    <button className="w-full bg-gradient-to-r from-pink-500 to-purple-600 text-white font-semibold py-3 rounded-xl hover:shadow-lg hover:shadow-pink-500/50 transition-all">
-                      {t.sections.subscription.upgrade}
-                    </button>
+                    <Link
+                      href="/comprar-tokens"
+                      className="block w-full text-center bg-gradient-to-r from-pink-500 to-purple-600 text-white font-semibold py-3 rounded-xl hover:shadow-lg hover:shadow-pink-500/50 transition-all"
+                    >
+                      {t.upgradeAccount}
+                    </Link>
                   </div>
                 </div>
               )}
