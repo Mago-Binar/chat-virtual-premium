@@ -1,11 +1,33 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useLocale } from '@/contexts/locale-context';
-import { Heart, Instagram, Twitter, Mail } from 'lucide-react';
+import { Heart, Instagram, Twitter, Mail, Facebook, MessageCircle } from 'lucide-react';
+import { getExternalLinks, ExternalLinks } from '@/lib/storage';
 
 export default function Footer() {
   const { locale } = useLocale();
+  const [externalLinks, setExternalLinks] = useState<ExternalLinks>({});
+
+  useEffect(() => {
+    loadLinks();
+
+    const handleLinksUpdate = () => {
+      loadLinks();
+    };
+
+    window.addEventListener('links-updated', handleLinksUpdate);
+    
+    return () => {
+      window.removeEventListener('links-updated', handleLinksUpdate);
+    };
+  }, []);
+
+  const loadLinks = () => {
+    const links = getExternalLinks();
+    setExternalLinks(links);
+  };
 
   const footerContent = {
     pt: {
@@ -14,8 +36,7 @@ export default function Footer() {
       links: 'Links Rápidos',
       quickLinks: [
         { label: 'Início', href: '/' },
-        { label: 'Modelos', href: '/#modelos' },
-        { label: 'Sobre', href: '/sobre' },
+        { label: 'Modelos', href: '/#models' },
         { label: 'Contato', href: 'mailto:meusugarsuporte@gmail.com' },
       ],
       social: 'Redes Sociais',
@@ -36,8 +57,7 @@ export default function Footer() {
       links: 'Quick Links',
       quickLinks: [
         { label: 'Home', href: '/' },
-        { label: 'Models', href: '/#modelos' },
-        { label: 'About', href: '/sobre' },
+        { label: 'Models', href: '/#models' },
         { label: 'Contact', href: 'mailto:meusugarsuporte@gmail.com' },
       ],
       social: 'Social Media',
@@ -58,8 +78,7 @@ export default function Footer() {
       links: 'Enlaces Rápidos',
       quickLinks: [
         { label: 'Inicio', href: '/' },
-        { label: 'Modelos', href: '/#modelos' },
-        { label: 'Acerca de', href: '/sobre' },
+        { label: 'Modelos', href: '/#models' },
         { label: 'Contacto', href: 'mailto:meusugarsuporte@gmail.com' },
       ],
       social: 'Redes Sociales',
@@ -124,7 +143,7 @@ export default function Footer() {
                 return (
                   <li key={link.href}>
                     <Link
-                      href={`${link.href}${link.href.includes('#') ? '' : `?lang=${locale}`}`}
+                      href={link.href}
                       className="text-white/60 hover:text-white text-sm transition-colors"
                     >
                       {link.label}
@@ -139,15 +158,46 @@ export default function Footer() {
           <div>
             <h4 className="font-semibold mb-4">{content.social}</h4>
             <div className="flex gap-4 mb-6">
-              <a href="#" className="text-white/60 hover:text-pink-500 transition-colors">
-                <Instagram className="w-5 h-5" />
-              </a>
-              <a href="#" className="text-white/60 hover:text-pink-500 transition-colors">
-                <Twitter className="w-5 h-5" />
-              </a>
-              <a href="mailto:meusugarsuporte@gmail.com" className="text-white/60 hover:text-pink-500 transition-colors">
-                <Mail className="w-5 h-5" />
-              </a>
+              {externalLinks.instagram && (
+                <a 
+                  href={externalLinks.instagram} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-white/60 hover:text-pink-500 transition-colors"
+                >
+                  <Instagram className="w-5 h-5" />
+                </a>
+              )}
+              {externalLinks.twitter && (
+                <a 
+                  href={externalLinks.twitter} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-white/60 hover:text-pink-500 transition-colors"
+                >
+                  <Twitter className="w-5 h-5" />
+                </a>
+              )}
+              {externalLinks.facebook && (
+                <a 
+                  href={externalLinks.facebook} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-white/60 hover:text-pink-500 transition-colors"
+                >
+                  <Facebook className="w-5 h-5" />
+                </a>
+              )}
+              {externalLinks.whatsapp && (
+                <a 
+                  href={externalLinks.whatsapp} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-white/60 hover:text-pink-500 transition-colors"
+                >
+                  <MessageCircle className="w-5 h-5" />
+                </a>
+              )}
             </div>
 
             <h4 className="font-semibold mb-4">{content.legal}</h4>
@@ -155,7 +205,7 @@ export default function Footer() {
               {content.legalLinks.map((link) => (
                 <li key={link.href}>
                   <Link
-                    href={`${link.href}?lang=${locale}`}
+                    href={link.href}
                     className="text-white/60 hover:text-white text-sm transition-colors"
                   >
                     {link.label}

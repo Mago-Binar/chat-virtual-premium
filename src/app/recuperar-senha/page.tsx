@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useLocale } from '@/contexts/locale-context';
 import { Mail, ArrowLeft, Send } from 'lucide-react';
 import Link from 'next/link';
+import { generateResetToken, getAllUsers } from '@/lib/storage';
 
 export default function RecuperarSenhaPage() {
   const router = useRouter();
@@ -58,30 +59,47 @@ export default function RecuperarSenhaPage() {
     setIsLoading(true);
 
     try {
-      // Verificar se o email existe no localStorage
-      const savedEmail = localStorage.getItem('euana-user-email');
+      // Verificar se o email existe
+      const users = getAllUsers();
       
-      if (savedEmail === email) {
-        // Simular envio de email (implementar backend depois)
-        setTimeout(() => {
-          setSuccess(true);
-          setIsLoading(false);
-          
-          // Gerar senha provisória
-          const tempPassword = Math.random().toString(36).slice(-8);
-          console.log('Senha provisória:', tempPassword);
-          
-          // Em produção, enviar email com senha provisória
-          alert(`✅ Senha provisória enviada para ${email}: ${tempPassword}`);
-          
-          setTimeout(() => {
-            router.push('/login');
-          }, 3000);
-        }, 1500);
-      } else {
+      if (!users[email]) {
         setError(t.errorMessage);
         setIsLoading(false);
+        return;
       }
+
+      // Gerar token de recuperação
+      const token = generateResetToken(email);
+      
+      if (!token) {
+        setError('Erro ao gerar token. Tente novamente.');
+        setIsLoading(false);
+        return;
+      }
+
+      // Criar link de recuperação
+      const resetLink = `${window.location.origin}/redefinir-senha?token=${token}`;
+
+      // Enviar email com link
+      await fetch('/api/auth/send-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email,
+          type: 'reset-password',
+          code: resetLink
+        })
+      });
+
+      setSuccess(true);
+      setIsLoading(false);
+      
+      // Em desenvolvimento, mostrar o link
+      alert(`✅ Link de recuperação enviado para ${email}\n\nLink (dev): ${resetLink}`);
+      
+      setTimeout(() => {
+        router.push('/login');
+      }, 3000);
     } catch (error) {
       console.error('Erro ao recuperar senha:', error);
       setError('Erro ao processar solicitação. Tente novamente.');

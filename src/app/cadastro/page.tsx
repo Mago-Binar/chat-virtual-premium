@@ -91,15 +91,27 @@ export default function CadastroPage() {
     setIsLoading(true);
 
     try {
-      // Salvar email no localStorage para recuperação de senha
-      localStorage.setItem('euana-user-email', formData.email);
-      
-      // Simular criação de conta (implementar backend depois)
-      setTimeout(() => {
-        console.log('Cadastro:', formData);
-        alert('✅ Conta criada com sucesso! Você ganhou 10 tokens de boas-vindas.');
-        router.push('/login');
-      }, 1500);
+      // Chamar API de registro
+      const response = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: formData.email,
+          password: formData.password,
+          name: formData.name,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setError(data.error || 'Erro ao criar conta');
+        setIsLoading(false);
+        return;
+      }
+
+      alert('✅ Conta criada com sucesso! Você ganhou 10 tokens de boas-vindas.');
+      router.push('/login');
     } catch (error) {
       console.error('Erro ao criar conta:', error);
       setError('Erro ao criar conta. Tente novamente.');

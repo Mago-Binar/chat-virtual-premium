@@ -48,7 +48,7 @@ export default function Header() {
         <div className="flex items-center justify-between">
           {/* Logo */}
           <Link href={`/?lang=${locale}`} className="text-2xl font-bold bg-gradient-to-r from-pink-500 to-purple-600 bg-clip-text text-transparent">
-            EuAna
+            Meu Sugar
           </Link>
 
           {/* Menu Desktop */}

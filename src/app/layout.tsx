@@ -9,6 +9,7 @@ import { LocaleProvider } from "@/contexts/locale-context";
 import { TokensProvider } from "@/contexts/tokens-context";
 import Header from "@/components/custom/header";
 import Footer from "@/components/custom/footer";
+import AgeGate from "@/components/custom/age-gate";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -21,7 +22,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "EuAna - Conversas Premium com IA",
+  title: "Meu Sugar - Conversas Premium com IA",
   description: "Plataforma premium de conversas com IA personalizadas",
 };
 
@@ -38,6 +39,7 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-black text-white`}
       >
+        <AgeGate />
         <LocaleProvider>
           <TokensProvider>
             <Header />

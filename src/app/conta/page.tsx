@@ -1,17 +1,30 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useLocale } from '@/contexts/locale-context';
 import { useTokens } from '@/contexts/tokens-context';
 import { User, Settings, LogOut, Mail, Lock, Bell, CreditCard, Shield, ChevronRight, Coins } from 'lucide-react';
 import Link from 'next/link';
+import { getCurrentUser, logoutUser, updateUser } from '@/lib/storage';
 
 export default function ContaPage() {
   const router = useRouter();
   const { locale } = useLocale();
   const { tokens } = useTokens();
   const [activeSection, setActiveSection] = useState('profile');
+  const [currentUser, setCurrentUser] = useState<any>(null);
+  const [twoFactorEnabled, setTwoFactorEnabled] = useState(false);
+
+  useEffect(() => {
+    const user = getCurrentUser();
+    if (!user) {
+      router.push('/login');
+      return;
+    }
+    setCurrentUser(user);
+    setTwoFactorEnabled(user.twoFactorEnabled || false);
+  }, [router]);
 
   const content = {
     pt: {
@@ -160,9 +173,32 @@ export default function ContaPage() {
   const t = content[locale];
 
   const handleLogout = () => {
-    // Implementar lógica de logout
-    console.log('Logout');
+    if (confirm('Tem certeza que deseja sair?')) {
+      logoutUser();
+      router.push('/login');
+    }
   };
+
+  const handleToggle2FA = async (enabled: boolean) => {
+    if (!currentUser) return;
+
+    setTwoFactorEnabled(enabled);
+    updateUser(currentUser.email, { twoFactorEnabled: enabled });
+
+    if (enabled) {
+      alert('✅ Autenticação de dois fatores ativada! Na próxima vez que você fizer login, receberá um código por email.');
+    } else {
+      alert('⚠️ Autenticação de dois fatores desativada.');
+    }
+  };
+
+  if (!currentUser) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-black">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-pink-500"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-black via-purple-950/20 to-black pt-24 pb-16">
@@ -214,7 +250,7 @@ export default function ContaPage() {
                 </button>
               ))}
 
-              {/* Logout Button */}
+              {/* Logout Button - FUNCIONAL */}
               <button
                 onClick={handleLogout}
                 className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-all mt-4"
@@ -237,7 +273,8 @@ export default function ContaPage() {
                       <label className="block text-white/80 mb-2 text-sm">{t.sections.profile.name}</label>
                       <input
                         type="text"
-                        placeholder="João Silva"
+                        value={currentUser.name}
+                        readOnly
                         className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-white/30 focus:outline-none focus:border-pink-500/50"
                       />
                     </div>
@@ -245,16 +282,17 @@ export default function ContaPage() {
                       <label className="block text-white/80 mb-2 text-sm">{t.sections.profile.email}</label>
                       <input
                         type="email"
-                        placeholder="joao@email.com"
+                        value={currentUser.email}
+                        readOnly
                         className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-white/30 focus:outline-none focus:border-pink-500/50"
                       />
                     </div>
-                    <button className="text-pink-500 hover:text-pink-400 text-sm transition-colors">
+                    <Link
+                      href="/recuperar-senha"
+                      className="text-pink-500 hover:text-pink-400 text-sm transition-colors inline-block"
+                    >
                       {t.sections.profile.changePassword}
-                    </button>
-                    <button className="w-full bg-gradient-to-r from-pink-500 to-purple-600 text-white font-semibold py-3 rounded-xl hover:shadow-lg hover:shadow-pink-500/50 transition-all mt-4">
-                      {t.sections.profile.save}
-                    </button>
+                    </Link>
                   </div>
                 </div>
               )}
@@ -307,14 +345,25 @@ export default function ContaPage() {
                     <div className="flex items-center justify-between p-4 bg-white/5 rounded-xl">
                       <span className="text-white/80">{t.sections.privacy.twoFactor}</span>
                       <label className="relative inline-block w-12 h-6">
-                        <input type="checkbox" className="sr-only peer" />
+                        <input
+                          type="checkbox"
+                          className="sr-only peer"
+                          checked={twoFactorEnabled}
+                          onChange={(e) => handleToggle2FA(e.target.checked)}
+                        />
                         <div className="w-12 h-6 bg-white/10 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-6 after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-gradient-to-r peer-checked:from-pink-500 peer-checked:to-purple-600"></div>
                       </label>
                     </div>
-                    <button className="w-full text-left p-4 bg-white/5 rounded-xl text-white/80 hover:bg-white/10 transition-colors">
+                    <Link
+                      href="/privacidade"
+                      className="w-full block text-left p-4 bg-white/5 rounded-xl text-white/80 hover:bg-white/10 transition-colors"
+                    >
                       {t.sections.privacy.dataPrivacy}
-                    </button>
-                    <button className="w-full text-left p-4 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 hover:bg-red-500/20 transition-colors">
+                    </Link>
+                    <button
+                      onClick={() => alert('Funcionalidade de exclusão de conta em desenvolvimento')}
+                      className="w-full text-left p-4 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 hover:bg-red-500/20 transition-colors"
+                    >
                       {t.sections.privacy.deleteAccount}
                     </button>
                   </div>
