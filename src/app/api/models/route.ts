@@ -9,6 +9,7 @@ const MOCK_MODELS = [
     age: 25,
     nationality: 'Brasileira',
     coverPhoto: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&h=600&fit=crop',
+    videoUrl: null,
     tags: ['Conversadora', 'Divertida', 'Inteligente'],
     slug: 'ana-silva',
     shortBio: 'Adoro conversar sobre tudo!',
@@ -27,6 +28,7 @@ const MOCK_MODELS = [
     age: 23,
     nationality: 'Portuguesa',
     coverPhoto: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&h=600&fit=crop',
+    videoUrl: null,
     tags: ['Carinhosa', 'Atenciosa', 'Romântica'],
     slug: 'beatriz-costa',
     shortBio: 'Sempre pronta para uma boa conversa',
@@ -45,6 +47,7 @@ const MOCK_MODELS = [
     age: 27,
     nationality: 'Brasileira',
     coverPhoto: 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=400&h=600&fit=crop',
+    videoUrl: null,
     tags: ['Sofisticada', 'Elegante', 'Culta'],
     slug: 'carolina-mendes',
     shortBio: 'Conversas inteligentes e envolventes',
@@ -64,7 +67,13 @@ export async function GET() {
   try {
     // Se Supabase não estiver configurado, retornar dados mock
     if (!isSupabaseConfigured() || !supabase) {
-      return NextResponse.json(MOCK_MODELS);
+      return NextResponse.json(MOCK_MODELS, {
+        status: 200,
+        headers: {
+          'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=120',
+          'Content-Type': 'application/json',
+        },
+      });
     }
 
     const { data: models, error } = await supabase
@@ -73,13 +82,25 @@ export async function GET() {
       .order('created_at', { ascending: false });
 
     if (error) {
-      // Retornar mock em caso de erro
-      return NextResponse.json(MOCK_MODELS);
+      console.error('Erro ao buscar modelos:', error);
+      return NextResponse.json(MOCK_MODELS, {
+        status: 200,
+        headers: {
+          'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=120',
+          'Content-Type': 'application/json',
+        },
+      });
     }
 
     // Se não houver modelos no banco, retornar mock
     if (!models || models.length === 0) {
-      return NextResponse.json(MOCK_MODELS);
+      return NextResponse.json(MOCK_MODELS, {
+        status: 200,
+        headers: {
+          'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=120',
+          'Content-Type': 'application/json',
+        },
+      });
     }
 
     // Transformar para o formato esperado pelo frontend
@@ -89,6 +110,7 @@ export async function GET() {
       age: model.age,
       nationality: model.nationality,
       coverPhoto: model.cover_photo,
+      videoUrl: model.video_url || null,
       tags: model.tags || [],
       slug: model.slug,
       shortBio: model.short_bio,
@@ -102,10 +124,22 @@ export async function GET() {
       },
     }));
 
-    return NextResponse.json(transformedModels);
-  } catch {
-    // Retornar mock em caso de erro
-    return NextResponse.json(MOCK_MODELS);
+    return NextResponse.json(transformedModels, {
+      status: 200,
+      headers: {
+        'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=120',
+        'Content-Type': 'application/json',
+      },
+    });
+  } catch (error) {
+    console.error('Erro inesperado na API models:', error);
+    return NextResponse.json(MOCK_MODELS, {
+      status: 200,
+      headers: {
+        'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=120',
+        'Content-Type': 'application/json',
+      },
+    });
   }
 }
 
@@ -145,6 +179,7 @@ export async function POST(request: Request) {
         age: body.age || 18,
         nationality: body.nationality || '',
         cover_photo: body.coverPhoto,
+        video_url: body.videoUrl || null,
         tags: body.tags || [],
         slug,
         short_bio: body.shortBio || '',
@@ -159,8 +194,9 @@ export async function POST(request: Request) {
       .single();
 
     if (error) {
+      console.error('Erro ao criar modelo:', error);
       return NextResponse.json(
-        { error: 'Erro ao criar modelo' },
+        { error: `Erro ao criar modelo: ${error.message}` },
         { status: 500 }
       );
     }
@@ -172,6 +208,7 @@ export async function POST(request: Request) {
       age: newModel.age,
       nationality: newModel.nationality,
       coverPhoto: newModel.cover_photo,
+      videoUrl: newModel.video_url || null,
       tags: newModel.tags || [],
       slug: newModel.slug,
       shortBio: newModel.short_bio,
@@ -186,7 +223,8 @@ export async function POST(request: Request) {
     };
 
     return NextResponse.json(transformedModel, { status: 201 });
-  } catch {
+  } catch (error) {
+    console.error('Erro inesperado ao criar modelo:', error);
     return NextResponse.json(
       { error: 'Erro interno do servidor' },
       { status: 500 }

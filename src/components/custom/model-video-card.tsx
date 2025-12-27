@@ -6,13 +6,13 @@ import Link from 'next/link';
 
 interface ModelVideoCardProps {
   model: {
-    id: number;
+    id: string | number;
     slug: string;
     name: string;
     age: number;
     nationality: string;
     coverPhoto: string;
-    videoUrl?: string;
+    videoUrl?: string | null;
     colors: {
       primary: string;
       secondary: string;

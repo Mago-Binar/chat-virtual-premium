@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
+import { supabase, isSupabaseConfigured } from '@/lib/supabase';
 
 // GET - Buscar modelo específica
 export async function GET(
@@ -7,6 +7,14 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
+    // Verificar se Supabase está configurado
+    if (!isSupabaseConfigured() || !supabase) {
+      return NextResponse.json(
+        { error: 'Banco de dados não configurado' },
+        { status: 503 }
+      );
+    }
+
     const { data: model, error } = await supabase
       .from('models')
       .select('*')
@@ -27,6 +35,7 @@ export async function GET(
       age: model.age,
       nationality: model.nationality,
       coverPhoto: model.cover_photo,
+      videoUrl: model.video_url || null,
       tags: model.tags || [],
       slug: model.slug,
       shortBio: model.short_bio,
@@ -56,23 +65,32 @@ export async function PUT(
   { params }: { params: { id: string } }
 ) {
   try {
+    // Verificar se Supabase está configurado
+    if (!isSupabaseConfigured() || !supabase) {
+      return NextResponse.json(
+        { error: 'Banco de dados não configurado. Configure as variáveis NEXT_PUBLIC_SUPABASE_URL e NEXT_PUBLIC_SUPABASE_ANON_KEY' },
+        { status: 503 }
+      );
+    }
+
     const body = await request.json();
 
     // Preparar dados para atualização
     const updateData: Record<string, unknown> = {};
 
-    if (body.name) updateData.name = body.name;
-    if (body.age) updateData.age = body.age;
-    if (body.nationality) updateData.nationality = body.nationality;
-    if (body.coverPhoto) updateData.cover_photo = body.coverPhoto;
-    if (body.tags) updateData.tags = body.tags;
-    if (body.shortBio) updateData.short_bio = body.shortBio;
-    if (body.longBio) updateData.long_bio = body.longBio;
-    if (body.conversationStyle) updateData.conversation_style = body.conversationStyle;
-    if (body.interests) updateData.interests = body.interests;
-    if (body.gallery) updateData.gallery = body.gallery;
-    if (body.colors?.primary) updateData.primary_color = body.colors.primary;
-    if (body.colors?.secondary) updateData.secondary_color = body.colors.secondary;
+    if (body.name !== undefined) updateData.name = body.name;
+    if (body.age !== undefined) updateData.age = body.age;
+    if (body.nationality !== undefined) updateData.nationality = body.nationality;
+    if (body.coverPhoto !== undefined) updateData.cover_photo = body.coverPhoto;
+    if (body.videoUrl !== undefined) updateData.video_url = body.videoUrl;
+    if (body.tags !== undefined) updateData.tags = body.tags;
+    if (body.shortBio !== undefined) updateData.short_bio = body.shortBio;
+    if (body.longBio !== undefined) updateData.long_bio = body.longBio;
+    if (body.conversationStyle !== undefined) updateData.conversation_style = body.conversationStyle;
+    if (body.interests !== undefined) updateData.interests = body.interests;
+    if (body.gallery !== undefined) updateData.gallery = body.gallery;
+    if (body.colors?.primary !== undefined) updateData.primary_color = body.colors.primary;
+    if (body.colors?.secondary !== undefined) updateData.secondary_color = body.colors.secondary;
 
     // Atualizar slug se nome mudou
     if (body.name) {
@@ -82,6 +100,9 @@ export async function PUT(
         .replace(/[^a-z0-9]+/g, '-')
         .replace(/(^-|-$)/g, '');
     }
+
+    // Adicionar timestamp de atualização
+    updateData.updated_at = new Date().toISOString();
 
     const { data: updatedModel, error } = await supabase
       .from('models')
@@ -93,8 +114,15 @@ export async function PUT(
     if (error) {
       console.error('Erro ao atualizar modelo:', error);
       return NextResponse.json(
-        { error: 'Erro ao atualizar modelo' },
+        { error: `Erro ao atualizar modelo: ${error.message}` },
         { status: 500 }
+      );
+    }
+
+    if (!updatedModel) {
+      return NextResponse.json(
+        { error: 'Modelo não encontrada' },
+        { status: 404 }
       );
     }
 
@@ -105,6 +133,7 @@ export async function PUT(
       age: updatedModel.age,
       nationality: updatedModel.nationality,
       coverPhoto: updatedModel.cover_photo,
+      videoUrl: updatedModel.video_url || null,
       tags: updatedModel.tags || [],
       slug: updatedModel.slug,
       shortBio: updatedModel.short_bio,
@@ -134,6 +163,14 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
+    // Verificar se Supabase está configurado
+    if (!isSupabaseConfigured() || !supabase) {
+      return NextResponse.json(
+        { error: 'Banco de dados não configurado. Configure as variáveis NEXT_PUBLIC_SUPABASE_URL e NEXT_PUBLIC_SUPABASE_ANON_KEY' },
+        { status: 503 }
+      );
+    }
+
     const { error } = await supabase
       .from('models')
       .delete()
@@ -142,7 +179,7 @@ export async function DELETE(
     if (error) {
       console.error('Erro ao excluir modelo:', error);
       return NextResponse.json(
-        { error: 'Erro ao excluir modelo' },
+        { error: `Erro ao excluir modelo: ${error.message}` },
         { status: 500 }
       );
     }

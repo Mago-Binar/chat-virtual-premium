@@ -19,7 +19,11 @@ let carouselSlides = [
 ];
 
 export async function GET() {
-  return NextResponse.json(carouselSlides);
+  return NextResponse.json(carouselSlides, {
+    headers: {
+      'Cache-Control': 'no-store, max-age=0',
+    },
+  });
 }
 
 export async function POST(request: Request) {

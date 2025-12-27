@@ -68,6 +68,7 @@ export interface Database {
           age: number;
           nationality: string;
           cover_photo: string;
+          video_url: string | null;
           tags: string[];
           slug: string;
           short_bio: string;
@@ -86,6 +87,7 @@ export interface Database {
           age: number;
           nationality: string;
           cover_photo: string;
+          video_url?: string | null;
           tags?: string[];
           slug: string;
           short_bio: string;
@@ -104,6 +106,7 @@ export interface Database {
           age?: number;
           nationality?: string;
           cover_photo?: string;
+          video_url?: string | null;
           tags?: string[];
           slug?: string;
           short_bio?: string;
